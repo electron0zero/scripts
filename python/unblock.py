@@ -1,8 +1,22 @@
+'''
+Usage : python unblock.py <hostname>
+
+A python Script to add stuff in hosts file
+helpful if your network blocks stuff by DNS and also block other DNS servers like google public DNS
+
+NOTE : it can only add hostname that are in homepage of website if you can't see anyhing on
+other page of site that's not working, then look into console and see which hostname is
+getting 404 or 403 then get that hostname and unblock that hostname also
+
+python 3 compatable
+Change 'urllib.parse'  in import statment to 'urlparse' if using python < 2.7.11
+becasue urlparse module was renamed to urllib.parse in python 2.7.11
+'''
 from bs4 import BeautifulSoup
 import requests
 import re
 import sys
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 def getIP(hostname):
     print("Fetching IP Address for "+ hostname)
