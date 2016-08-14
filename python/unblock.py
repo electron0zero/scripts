@@ -59,10 +59,16 @@ def isValidHostname(hostname):
 
 # Updates the Host File
 def update(ipaddress, hostname):
+    # linux host file location
     if 'linux' in sys.platform:
         filename = '/etc/hosts'
-    else:
+    # windwos host file location
+    elif 'win32' in sys.platform:
         filename = 'c:\windows\system32\drivers\etc\hosts'
+    # macOS host file location
+    elif 'darwin' in sys.platform:
+        filename = '/etc/hosts'
+
     outputfile = open(filename, 'a')
     entry = "\n" + ipaddress + "\t" + hostname
     outputfile.writelines(entry)
