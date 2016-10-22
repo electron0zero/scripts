@@ -1,4 +1,14 @@
 '''
+NOTE : if a website is down for you make sure that it's doesn't have a entry in yout host file
+	you will run into this case if a website changes it's IP, in that case that website will be down fot you.
+	remove it from host file and unblock again.
+
+HOW IT WORKS : see this video to understand it's working https://www.youtube.com/watch?v=zRysni9ND2w
+
+Dependencies : lxml, BeautifulSoup4, requests
+	install by running `pip install BeautifulSoup4 requests lxml`
+	for windows users if lxml install fails get wheel from [this website](http://www.lfd.uci.edu/~gohlke/pythonlibs/) and install
+
 Usage : python unblock.py <hostname>
 
 A python Script to add stuff in hosts file
