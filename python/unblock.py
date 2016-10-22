@@ -18,6 +18,8 @@ import re
 import sys
 from urllib.parse import urlparse
 
+sys.setrecursionlimit(1500)
+
 def getIP(hostname):
     print("Fetching IP Address for "+ hostname)
     # domainname=google.com&ipaddress=127.0.0.1&findIP=+Find+IP+Address+
@@ -76,10 +78,15 @@ def update(ipaddress, hostname):
 
 
 def exists(hostname):
+    # linux host file location
     if 'linux' in sys.platform:
         filename = '/etc/hosts'
-    else:
+    # windwos host file location
+    elif 'win32' in sys.platform:
         filename = 'c:\windows\system32\drivers\etc\hosts'
+    # macOS host file location
+    elif 'darwin' in sys.platform:
+        filename = '/etc/hosts'
     f = open(filename, 'r')
     hostfiledata = f.readlines()
     f.close()
@@ -91,7 +98,7 @@ def exists(hostname):
 def getHosts(hostname):
     # common URL that we don't want to add in host file
     # None is resulves from javascript:void(0) and we want to remove it
-    common = [ None, 'www.facebook.com', 'www.youtube.com', 'www.twitter.com', 'plus.google.com', 'www.google-analytics.com', 'apis.google.com', 'ajax.googleapis.com', 'twitter.com', 'platform.twitter.com', 'p.twitter.com', 'platform.tumblr.com']
+    common = [ None, 'www.facebook.com', 'www.youtube.com', 'www.twitter.com', 'plus.google.com', 'www.google-analytics.com', 'apis.google.com', 'ajax.googleapis.com', 'twitter.com', 'platform.twitter.com', 'p.twitter.com', 'platform.tumblr.com', 'github.com', 'www.github.com']
     hosts = []
 
     url = "http://"+hostname
