@@ -57,7 +57,7 @@ then
 	echo
 	sudo /etc/init.d/apache2 restart
 	echo
-	echo "#### go to browser and type ' localhost ' if you see a default page or it works type then type 'y' if you don't see that response then do a internet search ####";
+	echo "#### go to browser and type ' localhost ' if you see a default page or it works type then type 'y' if you don't see that response then do a internet search for your problem ####";
 	echo
 	read -p "response : " -n 1 -r
 	echo    # (optional) move to a new line
