@@ -194,7 +194,7 @@ def main():
         # exits if it does.
         print(hostname, 'already exists in the hostfile.')
         # update all the extra hosts if some is missing
-        updateHosts(hostname)
+        updateHosts(url)
         sys.exit(2)
 
     ipaddress = getIP(hostname)
