@@ -174,15 +174,14 @@ def updateHosts(url):
 
 def main():
     args = sys.argv[1:]
-    hostname = ''
-    url = ''
 
-    if len(args) != 2:
-        print('usage: <filename> hostname url')
+    if len(args) != 1:
+        print('usage: <filename> url')
         sys.exit(1)
 
-    hostname = args[0]
-    url = args[1]
+    url = args[0]
+    hostname = urlparse(url).hostname
+
     # print(hostname)
     # print(validHostname(hostname))
     if not isValidHostname(hostname):
