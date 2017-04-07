@@ -1,2 +1,0 @@
-https://raw.githubusercontent.com/ProjectRecommend/Recommend/master/Readme.md
-https://raw.githubusercontent.com/electron0zero/Sunshine-Wear-AND-P6/master/readme.md
