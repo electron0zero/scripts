@@ -22,35 +22,28 @@ python 3 compatible
 Change 'urllib.parse'  in import statement to 'urlparse' if using python < 2.7.11
 because urlparse module was renamed to urllib.parse in python 2.7.11
 '''
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
+import json
 import re
 import sys
 from urllib.parse import urlparse
 
-sys.setrecursionlimit(1500)
+# https://stackoverflow.com/a/106223/5209755
+regex_valid_hostname = r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"
+regex_valid_ip_address = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
 
 
 def getIP(hostname):
     print("Fetching IP Address for " + hostname)
-    # domainname=google.com&ipaddress=127.0.0.1&findIP=+Find+IP+Address+
-    payload = {'domainname': hostname, 'findIP': '+Find+IP+Address+'}
-    # print(payload)
-    r = requests.post("http://www.hcidata.info/host2ip.cgi", data=payload)
-    r.keep_alive = False
-    result = r.text.encode('utf-8')
-    # print(result)
-    soup = BeautifulSoup(result, 'lxml')
-    # print(soup)
-    preTag = str(soup.find_all('pre'))
-    ip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', preTag)
-    # print(ip[0])
-    return ip[0]
+    url = r"https://freegeoip.net/json/" + hostname
+    response = requests.get(url)
+    json_data = json.loads(response.text)
+    ip = json_data.get("ip")
+    return ip
 
 
 def isValidIP(ipaddress):
-    # Found this on
-    # http://stackoverflow.com/questions/319279/how-to-validate-ip-address-in-python
     parts = ipaddress.split(".")
     if len(parts) != 4:
         return False
@@ -65,26 +58,19 @@ def isValidIP(ipaddress):
 
 
 def isValidHostname(hostname):
-    # Found this on from
-    # http://stackoverflow.com/questions/2532053/validate-a-hostname-string
+    # Max len for Hostname is 255
     if len(hostname) > 255:
         return False
-    if hostname[0].isdigit():
-        return False
-    if hostname[-1:] == ".":
-        # strip exactly one dot from the right, if present
-        hostname = hostname[:-1]
-    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+    allowed = re.compile(regex_valid_hostname, re.IGNORECASE | re.MULTILINE | re.UNICODE)
     return all(allowed.match(x) for x in hostname.split("."))
 
+
 # Updates the Host File
-
-
 def update(ipaddress, hostname):
     # linux host file location
     if 'linux' in sys.platform:
         filename = '/etc/hosts'
-    # windwos host file location
+    # windows host file location
     elif 'win32' in sys.platform:
         filename = 'c:\windows\system32\drivers\etc\hosts'
     # macOS host file location
@@ -101,7 +87,7 @@ def exists(hostname):
     # linux host file location
     if 'linux' in sys.platform:
         filename = '/etc/hosts'
-    # windwos host file location
+    # windows host file location
     elif 'win32' in sys.platform:
         filename = 'c:\windows\system32\drivers\etc\hosts'
     # macOS host file location
@@ -110,6 +96,7 @@ def exists(hostname):
     f = open(filename, 'r')
     hostfiledata = f.readlines()
     f.close()
+
     for item in hostfiledata:
         if hostname in item:
             return True
@@ -117,11 +104,9 @@ def exists(hostname):
 
 
 def getHosts(url):
-    # common URL that we don't want to add in host file
-    # None is result from javascript:void(0) and we want to remove it
-    common = [None, 'www.facebook.com', 'www.youtube.com', 'www.twitter.com', 'plus.google.com', 'www.google-analytics.com', 'apis.google.com',
-              'ajax.googleapis.com', 'twitter.com', 'platform.twitter.com', 'p.twitter.com', 'platform.tumblr.com', 'github.com', 'www.github.com']
     hosts = []
+    # common is list of hostnames that we don't want to add in host file
+    common = []
 
     print("\nFetching all extra domains for " + url + "\n")
     r = requests.get(url)
@@ -135,6 +120,12 @@ def getHosts(url):
     for link in href_tags:
         href = link.get("href")
         hosts.append(urlparse(href).hostname)
+
+    with open('hostname.ignore', 'r') as f:
+        common = [line.strip() for line in f]
+    common.append(None)  # None is result from javascript:void(0) and we want to ingore it
+
+    # print(common)
 
     hosts = set(hosts)
     hosts = list(set(hosts) - set(common))
@@ -150,25 +141,24 @@ def updateHosts(url):
         ipaddress = ''
         if not isValidHostname(hostname):
             # checks the host name to see if it's valid.
-            print(hostname, "is not a valid hostname.")
+            print(hostname + "\tis not a valid hostname.")
             continue
         if exists(hostname):
             # checks to see if the host name already exists in the host file
             # and exits if it does.
-            print(hostname, 'already exists in the hostfile.')
+            print(hostname, "\talready exists in the hostfile.")
             continue
 
         ipaddress = getIP(hostname)
         # print(ipaddress)
         # print(isValidIP(ipaddress))
         if not isValidIP(ipaddress):
-            print(ipaddress, "is not a valid ipaddress.")
+            print(ipaddress, "\tis not a valid ipaddress.")
             continue
         # everything is OK update it in hostfile
         update(ipaddress, hostname)
         print("\"" + hostname + "\"" + " and ip address " +
-              "\"" + ipaddress + "\"" + " is added to Hosts file")
-
+              "\"" + ipaddress + "\"" + " is added to hostfile")
     print("\nDone")
 
 
@@ -176,7 +166,7 @@ def main():
     args = sys.argv[1:]
 
     if len(args) != 1:
-        print('usage: <filename> url')
+        print('usage: unblock.py <url>')
         sys.exit(1)
 
     url = args[0]
@@ -186,12 +176,12 @@ def main():
     # print(validHostname(hostname))
     if not isValidHostname(hostname):
         # checks the host name to see if it's valid.
-        print(hostname, "is not a valid hostname.")
+        print(hostname, "\tis not a valid hostname.")
         sys.exit(2)
     if exists(hostname):
         # checks to see if the host name already exists in the host file and
         # exits if it does.
-        print(hostname, 'already exists in the hostfile.')
+        print(hostname, "\talready exists in the hostfile.")
         # update all the extra hosts if some is missing
         updateHosts(url)
         sys.exit(2)
@@ -201,13 +191,13 @@ def main():
     # print(ipaddress)
     # print(isValidIP(ipaddress))
     if not isValidIP(ipaddress):
-        print(ipaddress, "is not a valid ipaddress.")
+        print(ipaddress, "\tis not a valid ipaddress.")
         sys.exit(2)
 
     # everything is OK update it in hostfile
     update(ipaddress, hostname)
-    print("\"" + hostname + "\"" + " and ip address " +
-          "\"" + ipaddress + "\"" + " is added to Hosts file")
+    print("\"" + hostname + "\"  " + "and ip address" +
+          "  \"" + ipaddress + "\"  " + "is added to hostfile")
     # update all the extra hosts
     updateHosts(url)
 
