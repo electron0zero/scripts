@@ -1,27 +1,3 @@
-'''
-NOTE : if a website is down for you make sure that it's doesn't have a entry in your host file
-you will run into this case if a website changes it's IP, in that case that website will be down for you.
-remove it from host file and unblock again.
-
-HOW IT WORKS : see this video to understand it's working https://www.youtube.com/watch?v=zRysni9ND2w
-
-Dependencies : lxml, BeautifulSoup4, requests
-install by running `pip install BeautifulSoup4 requests lxml`
-for windows users if lxml install fails get wheel from [this website](http://www.lfd.uci.edu/~gohlke/pythonlibs/) and install
-
-Usage : python unblock.py <hostname>
-
-A python Script to add stuff in hosts file helpful if your network blocks stuff by
-DNS requests(like OpenDNS) and also block other DNS servers like Google public DNS
-
-NOTE : it can only add hostname that are in homepage of website if you can't see anything on
-other page of site that's not working, then look into console and see which hostname is
-getting 404 or 403 then get that hostname and unblock that hostname also
-
-python 3 compatible
-Change 'urllib.parse'  in import statement to 'urlparse' if using python < 2.7.11
-because urlparse module was renamed to urllib.parse in python 2.7.11
-'''
 import requests
 from bs4 import BeautifulSoup
 import json
