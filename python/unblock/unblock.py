@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import os
 import json
 import re
 import sys
@@ -97,8 +98,13 @@ def getHosts(url):
         href = link.get("href")
         hosts.append(urlparse(href).hostname)
 
-    with open('hostname.ignore', 'r') as f:
+    script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+    rel_path = "hostname.ignore"
+    abs_file_path = os.path.join(script_dir, rel_path)
+
+    with open(abs_file_path, 'r') as f:
         common = [line.strip() for line in f]
+
     common.append(None)  # None is result from javascript:void(0) and we want to ingore it
 
     # print(common)
