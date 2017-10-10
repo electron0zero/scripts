@@ -10,9 +10,9 @@
 echo
 echo "########## LAMP Stack with phpmyadmin Installation ##############";
 echo
-if [ "`lsb_release -is`" == "Ubuntu" ]
+if [ "$(lsb_release -is)" == "Ubuntu" ]
 then
-	cd ~
+	cd ~ || exit
 	echo
 	echo "########### updateing system #################";
 	echo
@@ -91,10 +91,10 @@ then
 	echo
 	echo "###### setting up vhost directory in home folder ##########";
 	echo
-	cd ~
+	cd ~ || exit
 	mkdir vhost
 	sudo ln -s ~/vhost /var/www/html/
-	cd ~/vhost/
+	cd ~/vhost/ || exit
 	echo
 	echo " ######### putting a test index.html file in vhost so we can test that vhost is properly configured ###########";
 	echo
